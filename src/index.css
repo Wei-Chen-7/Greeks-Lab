@@ -1,0 +1,56 @@
+@import 'tailwindcss';
+
+/**
+ * Greeks Lab theme — calm, dark "trading terminal" feel with one restrained
+ * accent (emerald). Tailwind v4 reads custom tokens from the @theme block.
+ */
+@theme {
+  --color-term-bg: #0a0e14;
+  --color-term-panel: #111723;
+  --color-term-panel-2: #161d2b;
+  --color-term-border: #243044;
+  --color-term-grid: #1b2433;
+  --color-term-text: #e6edf3;
+  --color-term-muted: #8b97a7;
+  --color-term-faint: #5b6678;
+  --color-accent: #34d399;
+  --color-accent-dim: #1f6f54;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Menlo,
+    Consolas, monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-term-bg);
+  color: var(--color-term-text);
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Restrained accent on range inputs across browsers. */
+input[type='range'] {
+  accent-color: var(--color-accent);
+}
+
+/* Hide number-input spinners for a cleaner terminal look. */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+::selection {
+  background: var(--color-accent-dim);
+}
