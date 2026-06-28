@@ -20,6 +20,8 @@ interface GreekChartProps {
   data: SeriesPoint[]
   /** Where to draw the vertical reference line (current axis value). */
   referenceX: number
+  /** Strike(s) to mark with faint vertical lines (only meaningful on the spot axis). */
+  strikeMarkers?: number[]
   /** The metric's value at the current parameters, shown in the header. */
   currentValue: number
 }
@@ -55,7 +57,14 @@ function ChartTooltip({
   )
 }
 
-function GreekChartImpl({ metric, axis, data, referenceX, currentValue }: GreekChartProps) {
+function GreekChartImpl({
+  metric,
+  axis,
+  data,
+  referenceX,
+  strikeMarkers = [],
+  currentValue,
+}: GreekChartProps) {
   return (
     <div className="flex flex-col rounded-lg border border-term-border bg-term-panel p-3">
       <div className="mb-1 flex items-baseline justify-between">
@@ -94,6 +103,15 @@ function GreekChartImpl({ metric, axis, data, referenceX, currentValue }: GreekC
               cursor={{ stroke: chartColors.axis, strokeDasharray: '3 3' }}
             />
             <ReferenceLine y={0} stroke={chartColors.zeroLine} strokeWidth={1} />
+            {strikeMarkers.map((k) => (
+              <ReferenceLine
+                key={k}
+                x={k}
+                stroke={chartColors.strike}
+                strokeDasharray="2 3"
+                strokeWidth={1}
+              />
+            ))}
             <ReferenceLine
               x={referenceX}
               stroke={chartColors.reference}
