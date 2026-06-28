@@ -4,6 +4,8 @@ An interactive Black–Scholes options sandbox. Drag sliders for spot, volatilit
 time to expiry and watch the option price and its Greeks (delta, gamma, theta, vega,
 rho) reshape in real time. Built for building intuition about how the Greeks move.
 
+**🔗 Live demo: [wei-chen-7.github.io/Greeks-Lab](https://wei-chen-7.github.io/Greeks-Lab/)**
+
 ![Greeks Lab](docs/preview.png)
 
 ## Stack
