@@ -6,6 +6,7 @@ export const chartColors = {
   axis: '#5b6678',
   tick: '#8b97a7',
   reference: '#f59e0b',
+  strike: '#64748b',
   tooltipBg: '#0a0e14',
   tooltipBorder: '#243044',
   zeroLine: '#33415580',

@@ -1,17 +1,21 @@
-import { blackScholes, toDisplayGreeks } from '../math/blackScholes'
-import type { AxisKey, OptionType, Params, SeriesPoint } from './types'
+import { toDisplayGreeks } from '../math/blackScholes'
+import { positionGreeks, type Leg } from './position'
+import type { AxisKey, Params, SeriesPoint } from './types'
 
 /**
  * The span swept by each axis. The default windows follow the spec (spot is
  * 0.4K–1.6K, etc.), but each is widened just enough to always contain the current
- * parameter value so the vertical reference marker never slides off the chart.
+ * parameter value — and, for spot, every strike — so the reference markers never
+ * slide off the chart.
  */
-export function axisRange(axis: AxisKey, params: Params): [number, number] {
+export function axisRange(axis: AxisKey, params: Params, strikes: number[]): [number, number] {
   switch (axis) {
     case 'S': {
-      // A sensible window around the strike, expanded to keep the spot marker visible.
-      const lo = Math.min(0.4 * params.K, 0.9 * params.S)
-      const hi = Math.max(1.6 * params.K, 1.1 * params.S)
+      // A sensible window around the strikes, expanded to keep the markers visible.
+      const minK = Math.min(...strikes)
+      const maxK = Math.max(...strikes)
+      const lo = Math.min(0.4 * minK, 0.9 * params.S)
+      const hi = Math.max(1.6 * maxK, 1.1 * params.S)
       return [lo, hi]
     }
     case 'sigma':
@@ -23,12 +27,13 @@ export function axisRange(axis: AxisKey, params: Params): [number, number] {
 
 /**
  * Build the chart series by sweeping `axis` across [min, max] in `points` steps,
- * holding every other parameter fixed. Each point carries all metrics, already
- * scaled to display conventions, so a single sweep feeds every chart.
+ * holding every other parameter fixed. Each point carries all metrics for the whole
+ * position, already scaled to display conventions, so a single sweep feeds every
+ * chart. (The sweep never touches strike, so the legs stay fixed across it.)
  */
 export function buildSeries(
+  legs: Leg[],
   params: Params,
-  type: OptionType,
   axis: AxisKey,
   range: [number, number],
   points = 200,
@@ -39,7 +44,7 @@ export function buildSeries(
 
   for (let i = 0; i < points; i++) {
     const x = min + step * i
-    const g = toDisplayGreeks(blackScholes({ ...params, [axis]: x }, type))
+    const g = toDisplayGreeks(positionGreeks(legs, { ...params, [axis]: x }))
     out[i] = {
       x,
       price: g.price,

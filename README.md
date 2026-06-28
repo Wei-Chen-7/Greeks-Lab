@@ -80,8 +80,12 @@ r=5%` call (`10.4506`) and put (`5.5735`), put–call parity, and the
 - An x-axis switch so each Greek can be viewed as a function of **Spot**,
   **Volatility**, or **Time to expiry**. The chart range widens automatically so the
   current-value marker always stays in view.
+- A **two-leg vertical spread**: a second strike `K₂` and a Single/Spread toggle.
+  In spread mode the charts show the combined (long `K₁` / short `K₂`) position
+  Greeks — the capped-payoff price curve, sign-flipping gamma/vega between the
+  strikes, etc. — with faint reference lines at both strikes. Works for call or put
+  verticals; placing `K₂` above or below `K₁` gives a bull or bear spread.
 
 **Possible next steps**
 
-- A second strike to plot a two-leg position (e.g. a vertical spread) and its
-  combined Greeks.
+- Arbitrary multi-leg positions (straddles, butterflies, custom quantities).

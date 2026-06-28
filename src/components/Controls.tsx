@@ -1,4 +1,5 @@
 import { AXES } from '../lib/metrics'
+import type { PositionMode } from '../lib/position'
 import type { AxisKey, OptionType, Params } from '../lib/types'
 import { Segmented } from './Segmented'
 import { SliderRow } from './SliderRow'
@@ -10,11 +11,20 @@ interface ControlsProps {
   setOptionType: (t: OptionType) => void
   axis: AxisKey
   setAxis: (a: AxisKey) => void
+  mode: PositionMode
+  setMode: (m: PositionMode) => void
+  K2: number
+  setK2: (k: number) => void
 }
 
 const OPTION_OPTIONS = [
   { value: 'call' as const, label: 'Call' },
   { value: 'put' as const, label: 'Put' },
+]
+
+const MODE_OPTIONS = [
+  { value: 'single' as const, label: 'Single' },
+  { value: 'vertical' as const, label: 'Spread' },
 ]
 
 const AXIS_OPTIONS = AXES.map((a) => ({ value: a.key, label: a.short }))
@@ -26,13 +36,19 @@ export function Controls({
   setOptionType,
   axis,
   setAxis,
+  mode,
+  setMode,
+  K2,
+  setK2,
 }: ControlsProps) {
+  const spread = mode === 'vertical'
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3">
         <Segmented label="Option" value={optionType} options={OPTION_OPTIONS} onChange={setOptionType} />
-        <Segmented label="X-axis" value={axis} options={AXIS_OPTIONS} onChange={setAxis} />
+        <Segmented label="Position" value={mode} options={MODE_OPTIONS} onChange={setMode} />
       </div>
+      <Segmented label="X-axis" value={axis} options={AXIS_OPTIONS} onChange={setAxis} />
 
       {/* Primary drivers — the stars of the sandbox. */}
       <section className="rounded-lg border border-term-border bg-term-panel p-3">
@@ -77,7 +93,7 @@ export function Controls({
           Market
         </h2>
         <SliderRow
-          label="Strike  K"
+          label={spread ? 'Strike  K₁ (long)' : 'Strike  K'}
           value={params.K}
           min={1}
           max={300}
@@ -85,6 +101,17 @@ export function Controls({
           format={(v) => v.toFixed(2)}
           onChange={(v) => setParam('K', v)}
         />
+        {spread && (
+          <SliderRow
+            label="Strike  K₂ (short)"
+            value={K2}
+            min={1}
+            max={300}
+            step={0.5}
+            format={(v) => v.toFixed(2)}
+            onChange={setK2}
+          />
+        )}
         <SliderRow
           label="Risk-free rate  r"
           value={params.r * 100}

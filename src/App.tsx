@@ -3,9 +3,16 @@ import { ChartGrid } from './components/ChartGrid'
 import { Controls } from './components/Controls'
 import { ReadoutPanel } from './components/ReadoutPanel'
 import { axisMeta } from './lib/metrics'
+import {
+  buildLegs,
+  describePosition,
+  positionGreeks,
+  positionStrikes,
+  type PositionMode,
+} from './lib/position'
 import { axisRange, buildSeries } from './lib/series'
 import type { AxisKey, OptionType, Params } from './lib/types'
-import { blackScholes, toDisplayGreeks } from './math/blackScholes'
+import { toDisplayGreeks } from './math/blackScholes'
 
 const DEFAULT_PARAMS: Params = {
   S: 100,
@@ -16,12 +23,15 @@ const DEFAULT_PARAMS: Params = {
   q: 0,
 }
 
+const DEFAULT_K2 = 120
 const POINTS = 200
 
 function App() {
   const [params, setParams] = useState<Params>(DEFAULT_PARAMS)
   const [optionType, setOptionType] = useState<OptionType>('call')
   const [axis, setAxis] = useState<AxisKey>('S')
+  const [mode, setMode] = useState<PositionMode>('single')
+  const [K2, setK2] = useState<number>(DEFAULT_K2)
 
   const setParam = useCallback(
     <K extends keyof Params>(key: K, value: Params[K]) => {
@@ -30,19 +40,27 @@ function App() {
     [],
   )
 
+  // The legs of the plotted position. Strikes are fixed across an axis sweep.
+  const legs = useMemo(
+    () => buildLegs(mode, optionType, params.K, K2),
+    [mode, optionType, params.K, K2],
+  )
+  const strikes = useMemo(() => positionStrikes(legs), [legs])
+
   // One sweep feeds every chart. Memoized so dragging only recomputes on change.
   const series = useMemo(
-    () => buildSeries(params, optionType, axis, axisRange(axis, params), POINTS),
-    [params, optionType, axis],
+    () => buildSeries(legs, params, axis, axisRange(axis, params, strikes), POINTS),
+    [legs, params, axis, strikes],
   )
 
-  // Display-scaled Greeks at the exact current parameters (readout + chart headers).
+  // Display-scaled Greeks of the whole position at the current parameters.
   const current = useMemo(
-    () => toDisplayGreeks(blackScholes(params, optionType)),
-    [params, optionType],
+    () => toDisplayGreeks(positionGreeks(legs, params)),
+    [legs, params],
   )
 
   const meta = axisMeta(axis)
+  const positionLabel = describePosition(legs)
 
   return (
     <div className="mx-auto flex min-h-full max-w-[1500px] flex-col px-4 py-4 sm:px-6">
@@ -56,7 +74,7 @@ function App() {
           </span>
         </div>
         <span className="font-mono text-xs text-term-faint">
-          {optionType.toUpperCase()} · vs {meta.label} · {POINTS} pts
+          {positionLabel} · vs {meta.label} · {POINTS} pts
         </span>
       </header>
 
@@ -69,12 +87,16 @@ function App() {
             setOptionType={setOptionType}
             axis={axis}
             setAxis={setAxis}
+            mode={mode}
+            setMode={setMode}
+            K2={K2}
+            setK2={setK2}
           />
-          <ReadoutPanel values={current} />
+          <ReadoutPanel values={current} position={positionLabel} />
         </aside>
 
         <main className="min-w-0 flex-1">
-          <ChartGrid data={series} axis={axis} params={params} current={current} />
+          <ChartGrid data={series} axis={axis} params={params} strikes={strikes} current={current} />
         </main>
       </div>
     </div>
